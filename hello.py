@@ -14,16 +14,18 @@ results_path = Path('data/trial.xlsx')
 
 ledger = pd.read_excel(file_path, usecols="A:G")
 budget = pd.read_excel(file_path, sheet_name=1)
+ledger.columns = ['id','date', 'payee/from', 'check', 'amount', 'budget_line', 'budget']
 
 conn = duckdb.connect()
 cur =  conn.cursor()
 
+# create the tables
 cur.sql(query())
-
 cur.sql(query1())
 
+# create the list of budget_line
 list_ = [10*i for i in range(1,37)]
-results = [('BUDGET_LINE', 'BUDGET', 'Income', 'Expense')]
+results = []
 for x in list_:
     if x in [60, 310]:
         continue
@@ -35,4 +37,9 @@ for x in list_:
     )
     results.append(row)
 df = pd.DataFrame(results)
+print(df.info())
+print(df.head(10))
+df.columns = ['budget_line', 'budget', 'income', 'expenses']
+df = df.fillna(0)
+print(df.head(10))
 df.to_excel(results_path, index=False)
